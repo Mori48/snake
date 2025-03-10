@@ -3,6 +3,7 @@ from sys import exit
 import random
 pygame.init()
 
+fps =5
 screen = pygame.display.set_mode((900,1000))
 
 pygame.display.set_caption('Smart snake')
@@ -23,18 +24,22 @@ score=0
 
 
 
-snake_surf = pygame.Surface((CELL_SIZE/2,CELL_SIZE/2))
+snake_surf = pygame.Surface((CELL_SIZE//1.5,CELL_SIZE//1.5))
 snake_surf.fill('cornflowerblue')
 
 # Задаем начальную точку
 snake_x_pos = GRID_WIDTH // 2 * CELL_SIZE + CELL_SIZE/2
 snake_y_pos = GRID_HEIGHT // 2 * CELL_SIZE + FIELD_Y+CELL_SIZE/2
 
-snake_rect = snake_surf.get_rect(center =(snake_x_pos,snake_y_pos))
+#snake_rect = snake_surf.get_rect(center =(snake_x_pos,snake_y_pos))
 
 snake_speed =CELL_SIZE
 snake_move_x = 0
 snake_move_y = 0
+
+# Список хранящий тело змеи
+#snake_body = [(snake_x_pos,snake_y_pos),(snake_x_pos,(snake_y_pos+CELL_SIZE)),(snake_x_pos,(snake_y_pos+2*CELL_SIZE))] 
+snake_body = [(snake_x_pos,snake_y_pos)]
 
 apple_x_pos = random.randint(0, GRID_WIDTH - 1) * CELL_SIZE + CELL_SIZE/2
 apple_y_pos = random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE + FIELD_Y + CELL_SIZE/2
@@ -64,38 +69,53 @@ while True:
                 snake_move_x = -snake_speed
 
     screen.fill('Black')
-
+    # Отрисовка цветног поля
     for row in range(GRID_HEIGHT):
         for col in range(GRID_WIDTH):
             color = 'chartreuse4' if (row + col) % 2 == 0 else 'chartreuse3'
             pygame.draw.rect(screen, color, (col * CELL_SIZE, FIELD_Y + row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
 
     pygame.draw.rect(screen,'white',(FIELD_X,FIELD_Y,FIELD_WIDTH,FIELD_HEIGHT),5)
+    
     snake_y_pos+=snake_move_y
     snake_x_pos+=snake_move_x
 
-    snake_rect = snake_surf.get_rect(center = (snake_x_pos,snake_y_pos))
-    apple_rect=apple_surf.get_rect(center = (apple_x_pos,apple_y_pos))
+    snake_body.insert(0, (snake_x_pos, snake_y_pos))
 
-    if snake_rect.colliderect(apple_rect):
+    
+    snake_rect_head = snake_surf.get_rect(center = (snake_x_pos, snake_y_pos))
+
+    if snake_rect_head.colliderect(apple_rect):
         score+=1
+        fps +=0.2
         print(score)
         apple_x_pos = random.randint(0, GRID_WIDTH - 1) * CELL_SIZE + CELL_SIZE/2
         apple_y_pos = random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE + FIELD_Y + CELL_SIZE/2
+        apple_rect=apple_surf.get_rect(center = (apple_x_pos,apple_y_pos))
+    else:
+        snake_body.pop()
 
     if (
-        snake_rect.left < FIELD_X or
-        snake_rect.right > FIELD_X + FIELD_WIDTH or
-        snake_rect.top < FIELD_Y or
-        snake_rect.bottom > FIELD_Y + FIELD_HEIGHT
+        snake_rect_head.left < FIELD_X or
+        snake_rect_head.right > FIELD_X + FIELD_WIDTH or
+        snake_rect_head.top < FIELD_Y or
+        snake_rect_head.bottom > FIELD_Y + FIELD_HEIGHT 
     ):
         pygame.quit()
         exit()
 
+    for segment in snake_body[1:]:  
+        if snake_rect_head.colliderect(pygame.Rect(segment[0] - CELL_SIZE // 2, segment[1] - CELL_SIZE // 2, CELL_SIZE, CELL_SIZE)):
+            pygame.quit()
+            exit()
+
     text_surf = font.render('Score: ' + str(score), False, 'White')
     screen.blit(apple_surf,apple_rect)
-    screen.blit(snake_surf,snake_rect)
+
+    for segment in snake_body:
+        screen.blit(snake_surf, snake_surf.get_rect(center=segment))
+
     screen.blit(text_surf,(FIELD_WIDTH-200,60))
 
     pygame.display.update()
-    clock.tick(5)
+    clock.tick(fps)
