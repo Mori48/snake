@@ -2,6 +2,23 @@ import pygame
 from sys import exit
 import random
 
+
+def apple_spawn(snake_body,index):
+    # True для appple_pos_x
+    if index :
+        apple_x_pos = random.randint(0, GRID_WIDTH - 1) * CELL_SIZE + CELL_SIZE / 2
+        while any(segment[0] == apple_x_pos for segment in snake_body):
+            apple_x_pos = random.randint(0, GRID_WIDTH - 1) * CELL_SIZE + CELL_SIZE / 2
+        return apple_x_pos
+    else:
+        apple_y_pos = random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE + FIELD_Y + CELL_SIZE / 2
+        while any(segment[1] == apple_y_pos for segment in snake_body):
+            apple_y_pos = random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE + FIELD_Y + CELL_SIZE / 2
+        return apple_y_pos
+
+
+
+
 pygame.init()
 
 fps = 5
@@ -41,8 +58,8 @@ snake_body = [
     (snake_x_pos, snake_y_pos + 2 * CELL_SIZE)  # Третий сегмент
 ]
 
-apple_x_pos = random.randint(0, GRID_WIDTH - 1) * CELL_SIZE + CELL_SIZE / 2
-apple_y_pos = random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE + FIELD_Y + CELL_SIZE / 2
+apple_x_pos = apple_spawn(snake_body,True)
+apple_y_pos = apple_spawn(snake_body,False)
 
 apple_surf = pygame.Surface((CELL_SIZE // 2, CELL_SIZE // 2))
 apple_surf.fill('Red')
@@ -89,8 +106,8 @@ while True:
         if score % 2 == 0:
             fps += 0.2
         print(score)
-        apple_x_pos = random.randint(0, GRID_WIDTH - 1) * CELL_SIZE + CELL_SIZE / 2
-        apple_y_pos = random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE + FIELD_Y + CELL_SIZE / 2
+        apple_x_pos = apple_spawn(snake_body,True)
+        apple_y_pos = apple_spawn(snake_body,False)
         apple_rect = apple_surf.get_rect(center=(apple_x_pos, apple_y_pos))
     else:
         snake_body.pop()
